@@ -1,37 +1,41 @@
+import streamlit as st
 import random
 
-def number_guess():
-    print("Welcome to number guessing game")
-    
-    min_guess = 1
-    max_guess = 100
-    hidden_num = random.randint(min_guess, max_guess)
-    max_attempts = 5
-    attempts = 0
+if 'hidden_num' not in st.session_state:
+    st.session_state.hidden_num = random.randint(1, 100)
+    st.session_state.attempts = 0
+    st.session_state.max_attempts = 10
+    st.session_state.game_over = False
 
-    print(f"Guess number between {min_guess} and {max_guess}")
-    print(f"You have maximum 5")
+st.title(" Number Guessing Game")
 
-    while attempts < max_attempts:
-        guess_input = input(f"Attempts {attempts + 1}: Enter your guess:\t")
+st.markdown("""
+    Guess the number between 1 and 100.
+    You have a maximum of 10 attempts.
+    After each guess, you'll receive feedback on whether your guess was too high, too low, or correct.
+""")
 
-        if guess_input.isdigit():
-            guess = int(guess_input)
+if not st.session_state.game_over:
+    guess = st.number_input("Enter your guess:", min_value=1, max_value=100, step=1)
+    submit_button = st.button("Submit Guess")
+
+    if submit_button:
+        st.session_state.attempts += 1
+
+        if guess < st.session_state.hidden_num:
+            st.warning(f"Attempt {st.session_state.attempts}: {guess} is too low! Try again.")
+        elif guess > st.session_state.hidden_num:
+            st.warning(f"Attempt {st.session_state.attempts}: {guess} is too high! Try again.")
         else:
-            print("Plese enter the integer.")
-            continue
+            st.success(f"Correct! You've guessed the number {st.session_state.hidden_num} in {st.session_state.attempts} attempts.")
+            st.session_state.game_over = True
 
-        attempts += 1
+        if st.session_state.attempts >= st.session_state.max_attempts and not st.session_state.game_over:
+            st.error(f"Game Over! The correct number was {st.session_state.hidden_num}.")
+            st.session_state.game_over = True
 
-        if guess < hidden_num:
-            print("Too low. Try again\n")
-        elif guess > hidden_num:
-            print("Too high. Try again\n")
-        else:
-            print(f"Correct guess. You geeuessed the number {hidden_num} in {attempts} attempts.")
-            break
-    
-    else:
-        print(f"No guess left. The hidden number was {hidden_num}")
-
-number_guess()
+if st.session_state.game_over:
+    if st.button("Play Again"):
+        st.session_state.hidden_num = random.randint(1, 100)
+        st.session_state.attempts = 0
+        st.session_state.game_over = False
